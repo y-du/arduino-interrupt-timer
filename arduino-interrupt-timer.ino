@@ -1,24 +1,24 @@
-const int led_pin = 9;
 const int dip_1 = 2;
-const int dip_2 = 3;
-const int buzz_pin = 10;
+const int dip_pins[] = {4, 5, 6};
+const int led_pin = 7;
+const int buzz_pin = 8;
 
-volatile unsigned long seconds;
+volatile unsigned int seconds;
 volatile unsigned int dip_1_state;
-volatile unsigned int dip_2_state;
 int unsigned led_state;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(led_pin, OUTPUT);
   pinMode(dip_1, INPUT);
-  pinMode(dip_2, INPUT);
+  for(int i = 0; i < 3; i++){
+    pinMode(dip_pins[i], INPUT);
+  }
   pinMode(buzz_pin, OUTPUT);
+  digitalWrite(buzz_pin, HIGH);
   attachInterrupt(0, dip_1_ISR, CHANGE);
-  attachInterrupt(1, dip_2_ISR, CHANGE);
   seconds = 0;
   dip_1_state = 0;
-  dip_2_state = 0;
   led_state = 0;
   TCCR1A = 0;
   TCCR1B = 0;
@@ -32,19 +32,27 @@ void setup() {
 ISR(TIMER1_OVF_vect) {
   TCNT1 = 0x0BDC;
   seconds++;
-  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+  //digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 }
 
 void dip_1_ISR() {
   dip_1_state = digitalRead(dip_1);
 }
 
-void dip_2_ISR() {
-  dip_2_state = digitalRead(dip_2);
-}
-
 void loop() {
   if (dip_1_state > 0) {
+    int option = 0;
+    int duration = 0;
+    for(int i = 0; i < 3; i++){
+      option = (option << 1) | digitalRead(dip_pins[i]);
+    }
+    if (option == 4) {
+      duration = 60;
+    } else if (option == 6) {
+      duration = 30;
+    } else if (option == 7) {
+      duration = 180;
+    }
     TCNT1 = 0x0BDC;
     TCCR1B |= (1<<CS12);
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
@@ -52,7 +60,7 @@ void loop() {
     int start = seconds;
     long on_time = 0;
     long off_time = 0;
-    while (seconds - start < 300) {
+    while (seconds - start < duration) {
       if ((led_state == 0) && (millis() - off_time >= 50)) {
         digitalWrite(led_pin, HIGH);
         led_state = 1;
@@ -78,20 +86,20 @@ void loop() {
     while (dip_1_state > 0) {
       if ((led_state == 0) && (millis() - off_time >= 400)) {
         digitalWrite(led_pin, HIGH);
-        digitalWrite(buzz_pin, HIGH);
+        digitalWrite(buzz_pin, LOW);
         led_state = 1;
         on_time = millis();
       }
       if ((led_state == 1) && (millis() - on_time >= 800)) {
         digitalWrite(led_pin, LOW);
-        digitalWrite(buzz_pin, LOW);
+        digitalWrite(buzz_pin, HIGH);
         led_state = 0;
         off_time = millis();
       }
     }
     if (led_state == 1) {
         digitalWrite(led_pin, LOW);
-        digitalWrite(buzz_pin, LOW);
+        digitalWrite(buzz_pin, HIGH);
         led_state = 0;
     }
   }
