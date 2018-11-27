@@ -14,15 +14,15 @@
    limitations under the License.
 */
 
-const int switch_pin = 2;
-const int dip_pins[] = {4, 5, 6};
-const int led_pin = 7;
-const int buzz_pin = 8;
+const int switch_pin{2};
+const int dip_pins[]{4, 5, 6};
+const int led_pin{7};
+const int buzz_pin{8};
 
-volatile unsigned int seconds = 0;
-volatile int switch_pin_state = 0;
-int led_state = 0;
-int buzz_state = 0;
+volatile unsigned int seconds{0};
+volatile int switch_pin_state{0};
+int led_state{0};
+int buzz_state{0};
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
