@@ -14,15 +14,15 @@
    limitations under the License.
 */
 
-const int switch_pin{2};
-const int dip_pins[]{4, 5, 6};
-const int led_pin{7};
-const int buzz_pin{8};
+const byte switch_pin{2};
+const byte dip_pins[]{4, 5, 6};
+const byte led_pin{7};
+const byte buzz_pin{8};
 
-volatile unsigned int seconds{0};
-volatile int switch_pin_state{0};
-int led_state{0};
-int buzz_state{0};
+volatile unsigned int seconds;
+volatile bool switch_pin_state{0};
+bool led_state{0};
+bool buzz_state{0};
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
@@ -48,7 +48,7 @@ void switch_pin_ISR() {
     switch_pin_state = digitalRead(switch_pin);
 }
 
-int option;
+byte option;
 int duration;
 int start;
 long on_time;
